@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教师后台 · 除杂特工管理系统</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
+        body {
+            background: linear-gradient(135deg, #0f1419 0%, #1a2634 50%, #0d1520 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e8e8e8;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 30px;
+            padding: 20px 28px;
+            background: rgba(30, 50, 70, 0.8);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 200, 100, 0.3);
+        }
+        .header h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .header-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #4a90d9, #2d6cb5);
+            color: white;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(74, 144, 217, 0.4); }
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+        .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4); }
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60, #1e8449);
+            color: white;
+        }
+        .btn-success:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4); }
+        .btn-warning {
+            background: linear-gradient(135deg, #f39c12, #d68910);
+            color: white;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: rgba(25, 45, 65, 0.9);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            border: 1px solid rgba(255, 200, 100, 0.2);
+            transition: transform 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-4px); }
+        .stat-card .icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+        .stat-card .value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #ffd700;
+        }
+        .stat-card .label {
+            font-size: 0.9rem;
+            color: #aab;
+            margin-top: 6px;
+        }
+        .stat-card.success .icon { color: #2ecc71; }
+        .stat-card.success .value { color: #2ecc71; }
+        .stat-card.warning .icon { color: #f39c12; }
+        .stat-card.warning .value { color: #f39c12; }
+        .stat-card.danger .icon { color: #e74c3c; }
+        .stat-card.danger .value { color: #e74c3c; }
+        
+        .section {
+            background: rgba(20, 40, 55, 0.9);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(255, 200, 100, 0.2);
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #ffd700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .students-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+        .students-table th, .students-table td {
+            padding: 14px 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .students-table th {
+            background: rgba(0, 0, 0, 0.3);
+            font-weight: 600;
+            color: #ffd700;
+            position: sticky;
+            top: 0;
+        }
+        .students-table tr:hover { background: rgba(255, 255, 255, 0.05); }
+        .students-table .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .status-badge.passed { background: #27ae60; color: white; }
+        .status-badge.failed { background: #e74c3c; color: white; }
+        .status-badge.pending { background: #7f8c8d; color: white; }
+        
+        .student-actions { display: flex; gap: 8px; }
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            border-radius: 8px;
+        }
+        
+        .table-container {
+            max-height: 500px;
+            overflow-y: auto;
+            border-radius: 12px;
+        }
+        
+        .level1-status {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .level1-status .badge {
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 700;
+        }
+        .level1-status .badge.unlocked { background: #27ae60; color: white; }
+        .level1-status .badge.locked { background: #7f8c8d; color: white; }
+        
+        .teacher-student-card {
+            background: rgba(30, 62, 79, 0.8);
+            border-radius: 16px;
+            padding: 16px;
+            border-left: 6px solid #ffc285;
+            transition: all 0.2s;
+        }
+        .teacher-student-card.passed {
+            border-left-color: #2ecc71;
+            background: rgba(39, 174, 96, 0.2);
+        }
+        .teacher-student-card.failed {
+            border-left-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.15);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+        .loading i { font-size: 2rem; animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        .toast.success { background: #27ae60; }
+        .toast.error { background: #e74c3c; }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .qr-section {
+            background: rgba(30, 50, 70, 0.8);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        .qr-section h3 {
+            color: #ffd700;
+            margin-bottom: 12px;
+        }
+        .qr-section p {
+            color: #aab;
+            margin-bottom: 16px;
+        }
+        .url-display {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 1.1rem;
+            color: #4fc3f7;
+            word-break: break-all;
+        }
+        
+        .filter-bar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .filter-bar select, .filter-bar input {
+            padding: 10px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 200, 100, 0.3);
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            font-size: 0.95rem;
+        }
+        .filter-bar select:focus, .filter-bar input:focus {
+            outline: none;
+            border-color: #ffd700;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.3rem; }
+            .students-table { font-size: 0.85rem; }
+            .students-table th, .students-table td { padding: 10px 8px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1><i class="fas fa-chalkboard-teacher"></i> 教师后台 · 除杂特工管理系统</h1>
+        <div class="header-actions">
+            <button class="btn btn-primary" onclick="refreshData()"><i class="fas fa-sync-alt"></i> 刷新数据</button>
+            <button class="btn btn-success" onclick="exportData()"><i class="fas fa-download"></i> 导出数据</button>
+            <button class="btn btn-danger" onclick="resetAllData()"><i class="fas fa-trash-alt"></i> 重置全部</button>
+        </div>
+    </div>
+    
+    <div class="qr-section">
+        <h3><i class="fas fa-qrcode"></i> 学生访问地址</h3>
+        <p>学生可通过以下地址访问游戏（同一局域网内）</p>
+        <div class="url-display" id="studentUrl">加载中...</div>
+    </div>
+    
+    <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+            <div class="icon"><i class="fas fa-users"></i></div>
+            <div class="value" id="totalStudents">-</div>
+            <div class="label">总学生数</div>
+        </div>
+        <div class="stat-card success">
+            <div class="icon"><i class="fas fa-check-circle"></i></div>
+            <div class="value" id="level1Passed">-</div>
+            <div class="label">第一关通关</div>
+        </div>
+        <div class="stat-card warning">
+            <div class="icon"><i class="fas fa-trophy"></i></div>
+            <div class="value" id="level2Passed">-</div>
+            <div class="label">第二关通关</div>
+        </div>
+        <div class="stat-card danger">
+            <div class="icon"><i class="fas fa-paper-plane"></i></div>
+            <div class="value" id="level2Submitted">-</div>
+            <div class="label">第二关已提交</div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <div class="section-header">
+            <div class="section-title"><i class="fas fa-flask"></i> 第一关状态</div>
+            <button class="btn btn-warning" onclick="toggleLevel1()"><i class="fas fa-unlock"></i> 解锁/锁定第二关</button>
+        </div>
+        <div class="level1-status">
+            <span>全班第一关状态：</span>
+            <span class="badge" id="level1GlobalBadge">加载中...</span>
+            <span id="level1Progress" style="color: #aab;"></span>
+        </div>
+    </div>
+    
+    <div class="section">
+        <div class="section-header">
+            <div class="section-title"><i class="fas fa-layer-group"></i> 方案合并视图</div>
+            <button class="btn btn-primary" onclick="toggleMergeView()"><i class="fas fa-exchange-alt"></i> 切换视图</button>
+        </div>
+        <div id="mergeViewContainer">
+            <div class="filter-bar">
+                <select id="filterMergeStatus" onchange="renderMergeView()">
+                    <option value="all">全部方案</option>
+                    <option value="correct">仅正确方案</option>
+                    <option value="wrong">仅错误方案</option>
+                </select>
+            </div>
+            <div id="mergeViewGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; margin-top: 16px;">
+                <div style="text-align:center; padding:40px; color:#888; grid-column: 1/-1;">加载中...</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <div class="section-header">
+            <div class="section-title"><i class="fas fa-list-alt"></i> 学生详情列表</div>
+        </div>
+        <div class="filter-bar">
+            <select id="filterLevel1" onchange="renderStudentsTable()">
+                <option value="all">第一关：全部</option>
+                <option value="passed">第一关：已通关</option>
+                <option value="not_passed">第一关：未通关</option>
+            </select>
+            <select id="filterLevel2" onchange="renderStudentsTable()">
+                <option value="all">第二关：全部</option>
+                <option value="passed">第二关：已通关</option>
+                <option value="submitted">第二关：已提交</option>
+                <option value="not_submitted">第二关：未提交</option>
+            </select>
+        </div>
+        <div class="table-container">
+            <table class="students-table">
+                <thead>
+                    <tr>
+                        <th>编号</th>
+                        <th>姓名</th>
+                        <th>第一关</th>
+                        <th>第二关状态</th>
+                        <th>第二关提交顺序</th>
+                        <th>最后更新</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="studentsTableBody">
+                    <tr><td colspan="7" class="loading"><i class="fas fa-spinner"></i> 加载中...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = '';
+    let studentsData = [];
+    let statsData = {};
+    let globalLevel1Passed = false;
+    
+    const allSteps = ["溶解", "加入BaCl₂溶液", "加入NaOH溶液", "加入Na₂CO₃溶液", "过滤", "加入盐酸", "蒸发结晶"];
+    const correctPatterns = [
+        [0,1,2,3,4,5,6],
+        [0,2,1,3,4,5,6],
+        [0,1,3,2,4,5,6]
+    ];
+    let showMergeView = true;
+    
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+    
+    async function fetchAPI(endpoint, options = {}) {
+        try {
+            const res = await fetch(`${API_BASE}${endpoint}`, {
+                ...options,
+                headers: { 'Content-Type': 'application/json', ...options.headers }
+            });
+            return await res.json();
+        } catch (e) {
+            console.error('API Error:', e);
+            showToast('网络错误，请检查服务器连接', 'error');
+            return null;
+        }
+    }
+    
+    async function refreshData() {
+        const [stats, students, global] = await Promise.all([
+            fetchAPI('/api/admin/stats'),
+            fetchAPI('/api/admin/students'),
+            fetchAPI('/api/global/level1')
+        ]);
+        
+        if (stats) {
+            statsData = stats;
+            document.getElementById('totalStudents').textContent = stats.total;
+            document.getElementById('level1Passed').textContent = stats.level1PassedCount;
+            document.getElementById('level2Passed').textContent = stats.level2PassedCount;
+            document.getElementById('level2Submitted').textContent = stats.level2SubmittedCount;
+        }
+        
+        if (students) {
+            studentsData = students;
+            renderStudentsTable();
+            renderMergeView();
+        }
+        
+        if (global) {
+            globalLevel1Passed = global.passed;
+            updateLevel1Badge();
+        }
+        
+        updateStudentUrl();
+        showToast('数据已刷新');
+    }
+    
+    function updateLevel1Badge() {
+        const badge = document.getElementById('level1GlobalBadge');
+        const progress = document.getElementById('level1Progress');
+        if (globalLevel1Passed) {
+            badge.className = 'badge unlocked';
+            badge.innerHTML = '<i class="fas fa-unlock"></i> 第二关已解锁';
+            progress.textContent = '全班已通关第一关';
+        } else {
+            badge.className = 'badge locked';
+            badge.innerHTML = '<i class="fas fa-lock"></i> 第二关锁定中';
+            progress.textContent = `通关进度: ${statsData.level1PassedCount || 0}/${statsData.total || 0}`;
+        }
+    }
+    
+    function isCorrectOrder(orderStr) {
+        if (!orderStr) return false;
+        const slots = orderStr.split(',').map(Number);
+        return correctPatterns.some(p => p.every((v, i) => v === slots[i]));
+    }
+    
+    function toggleMergeView() {
+        showMergeView = !showMergeView;
+        const container = document.getElementById('mergeViewContainer');
+        const btn = event.target.closest('button');
+        if (showMergeView) {
+            container.style.display = 'block';
+            btn.innerHTML = '<i class="fas fa-exchange-alt"></i> 切换视图';
+        } else {
+            container.style.display = 'none';
+            btn.innerHTML = '<i class="fas fa-eye"></i> 显示合并视图';
+        }
+    }
+    
+    function renderMergeView() {
+        const grid = document.getElementById('mergeViewGrid');
+        const filterStatus = document.getElementById('filterMergeStatus').value;
+        
+        const schemeMap = new Map();
+        
+        studentsData.forEach(s => {
+            if (!s.level2LastOrder) return;
+            
+            const key = s.level2LastOrder;
+            if (!schemeMap.has(key)) {
+                schemeMap.set(key, {
+                    students: [s.id],
+                    slots: s.level2Slots,
+                    passed: s.level2Passed,
+                    lastTime: s.updatedAt
+                });
+            } else {
+                const existing = schemeMap.get(key);
+                existing.students.push(s.id);
+                existing.students.sort((a, b) => a - b);
+                if (s.level2Passed) existing.passed = true;
+                if (s.updatedAt && (!existing.lastTime || s.updatedAt > existing.lastTime)) {
+                    existing.lastTime = s.updatedAt;
+                }
+            }
+        });
+        
+        let schemes = Array.from(schemeMap.entries());
+        
+        if (filterStatus === 'correct') {
+            schemes = schemes.filter(([key, data]) => data.passed);
+        } else if (filterStatus === 'wrong') {
+            schemes = schemes.filter(([key, data]) => !data.passed);
+        }
+        
+        schemes.sort((a, b) => b[1].students.length - a[1].students.length);
+        
+        if (schemes.length === 0) {
+            grid.innerHTML = '<div style="text-align:center; padding:40px; color:#888; grid-column: 1/-1;">暂无提交数据</div>';
+            return;
+        }
+        
+        grid.innerHTML = schemes.map(([key, data]) => {
+            const slots = data.slots;
+            const isCorrect = data.passed;
+            
+            const stepsDisplay = slots.map((val, idx) => {
+                const stepName = val !== -1 ? allSteps[val] : '空';
+                return `<div style="display:flex; align-items:center; gap:6px; padding:4px 8px; background:rgba(0,0,0,0.2); border-radius:8px; margin:2px;">
+                    <span style="background:#ffd700; color:#000; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:bold;">${idx + 1}</span>
+                    <span style="font-size:0.85rem;">${stepName}</span>
+                </div>`;
+            }).join('');
+            
+            const statusClass = isCorrect ? 'passed' : 'failed';
+            const statusIcon = isCorrect ? '<i class="fas fa-check-circle" style="color:#2ecc71;"></i>' : '<i class="fas fa-times-circle" style="color:#e74c3c;"></i>';
+            const statusText = isCorrect ? '正确方案' : '错误方案';
+            
+            return `
+                <div class="teacher-student-card ${statusClass}" style="padding:16px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                        <div style="font-weight:bold; color:#ffd700;">
+                            <i class="fas fa-users"></i> ${data.students.length} 人
+                        </div>
+                        <div style="font-size:0.85rem;">
+                            ${statusIcon} ${statusText}
+                        </div>
+                    </div>
+                    <div style="font-size:0.8rem; color:#aab; margin-bottom:8px;">
+                        学生编号: #${data.students.join(', #')}
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        ${stepsDisplay}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    function renderStudentsTable() {
+        const tbody = document.getElementById('studentsTableBody');
+        const filterL1 = document.getElementById('filterLevel1').value;
+        const filterL2 = document.getElementById('filterLevel2').value;
+        
+        let filtered = studentsData.filter(s => {
+            if (filterL1 === 'passed' && !s.level1Passed) return false;
+            if (filterL1 === 'not_passed' && s.level1Passed) return false;
+            if (filterL2 === 'passed' && !s.level2Passed) return false;
+            if (filterL2 === 'submitted' && !s.level2LastOrder) return false;
+            if (filterL2 === 'not_submitted' && s.level2LastOrder) return false;
+            return true;
+        });
+        
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:40px; color:#888;">暂无符合条件的数据</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = filtered.map(s => {
+            const l1Badge = s.level1Passed 
+                ? '<span class="status-badge passed"><i class="fas fa-check"></i> 通关</span>'
+                : '<span class="status-badge pending"><i class="fas fa-clock"></i> 未通关</span>';
+            
+            let l2Badge = '<span class="status-badge pending"><i class="fas fa-minus"></i> 未开始</span>';
+            if (s.level2Passed) {
+                l2Badge = '<span class="status-badge passed"><i class="fas fa-trophy"></i> 通关</span>';
+            } else if (s.level2LastOrder) {
+                l2Badge = '<span class="status-badge failed"><i class="fas fa-times"></i> 错误</span>';
+            }
+            
+            const orderDisplay = s.level2LastOrder 
+                ? s.level2LastOrder.split(',').map(idx => allSteps[parseInt(idx)] || '?').join(' → ')
+                : '-';
+            
+            const updateTime = s.updatedAt ? new Date(s.updatedAt * 1000).toLocaleString('zh-CN') : '-';
+            
+            return `
+                <tr>
+                    <td><strong>#${s.id}</strong></td>
+                    <td>${s.name || '-'}</td>
+                    <td>${l1Badge}</td>
+                    <td>${l2Badge}</td>
+                    <td style="font-size:0.85rem; max-width:300px;">${orderDisplay}</td>
+                    <td style="font-size:0.85rem;">${updateTime}</td>
+                    <td>
+                        <div class="student-actions">
+                            <button class="btn btn-warning btn-sm" onclick="resetStudent(${s.id})"><i class="fas fa-redo"></i> 重置</button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+    
+    async function toggleLevel1() {
+        const newStatus = !globalLevel1Passed;
+        const result = await fetchAPI('/api/global/level1', {
+            method: 'POST',
+            body: JSON.stringify({ passed: newStatus })
+        });
+        if (result) {
+            globalLevel1Passed = newStatus;
+            updateLevel1Badge();
+            showToast(newStatus ? '第二关已解锁' : '第二关已锁定');
+        }
+    }
+    
+    async function resetStudent(id) {
+        if (!confirm(`确定要重置学生 #${id} 的所有数据吗？`)) return;
+        const result = await fetchAPI(`/api/admin/reset-student/${id}`, { method: 'POST' });
+        if (result) {
+            showToast(`学生 #${id} 已重置`);
+            refreshData();
+        }
+    }
+    
+    async function resetAllData() {
+        if (!confirm('⚠️ 确定要重置所有学生的数据吗？此操作不可恢复！')) return;
+        if (!confirm('再次确认：所有学生数据将被清空！')) return;
+        const result = await fetchAPI('/api/admin/reset', { method: 'POST' });
+        if (result) {
+            showToast('所有数据已重置');
+            refreshData();
+        }
+    }
+    
+    function exportData() {
+        const csv = ['编号,姓名,第一关通关,第二关通关,第二关提交顺序,最后更新时间'];
+        studentsData.forEach(s => {
+            const order = s.level2LastOrder 
+                ? s.level2LastOrder.split(',').map(idx => allSteps[parseInt(idx)] || '?').join('→')
+                : '';
+            csv.push(`${s.id},${s.name || ''},${s.level1Passed ? '是' : '否'},${s.level2Passed ? '是' : '否'},"${order}",${s.updatedAt ? new Date(s.updatedAt * 1000).toLocaleString('zh-CN') : ''}`);
+        });
+        
+        const blob = new Blob(['\ufeff' + csv.join('\n')], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `学生闯关数据_${new Date().toLocaleDateString('zh-CN')}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('数据已导出');
+    }
+    
+    function updateStudentUrl() {
+        const urlDisplay = document.getElementById('studentUrl');
+        const protocol = window.location.protocol;
+        const host = window.location.hostname;
+        const port = window.location.port || '3000';
+        urlDisplay.textContent = `${protocol}//${host}:${port}/`;
+    }
+    
+    refreshData();
+    setInterval(refreshData, 10000);
+</script>
+</body>
+</html>
